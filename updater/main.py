@@ -113,7 +113,7 @@ def update_previous_discord_version(version):
         print_error(f"Error writing version file: {e}")
         sys.exit(1)
 
-def update_betterdiscord():
+def update_betterdiscord(inject_type):
     print_info("Updating BetterDiscord...")
     
     bd_dir = "/tmp/BetterDiscord"
@@ -156,8 +156,8 @@ def update_betterdiscord():
         print_error("Errors:", pnpm_build_result.stderr)
         return
     
-    print_info("Injecting BetterDiscord...")
-    pnpm_inject_result = subprocess.run(['pnpm', 'inject'], capture_output=True, text=True)
+    print_info(f"Injecting BetterDiscord for {inject_type}...")
+    pnpm_inject_result = subprocess.run(['pnpm', 'inject', inject_type], capture_output=True, text=True)
     if pnpm_inject_result.returncode != 0:
         print_error("Error injecting BetterDiscord.")
         print_error("Output:", pnpm_inject_result.stdout)
@@ -200,21 +200,11 @@ def restart_discord():
     else:
         print_error("Could not find Discord executable to restart.")
 
-def check_update(discord_path):
-    current_version = get_current_discord_version(discord_path)
-    previous_version = get_previous_discord_version()
-
-    if previous_version is None or current_version != previous_version:
-        print_success(f"Discord has been updated from {previous_version} to {current_version}.")
-        update_betterdiscord()
-        update_previous_discord_version(current_version)
-    else:
-        print_info(f"Discord is up-to-date with version {current_version}.")
-
 def main():
     parser = argparse.ArgumentParser(description="BetterDiscord Updater")
     parser.add_argument('command', choices=['update'], help="Command to execute")
-    
+    parser.add_argument('--type', choices=['canary', 'ptb'], default='canary', help="Injection type (canary or ptb)")
+
     args = parser.parse_args()
     
     # Check for required tools
@@ -237,7 +227,7 @@ def main():
         return
     
     if args.command == 'update':
-        check_update(discord_path)
+        update_betterdiscord(args.type)
 
 if __name__ == "__main__":
     main()

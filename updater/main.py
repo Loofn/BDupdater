@@ -226,8 +226,15 @@ def main():
         print_warning("Discord installation not found.")
         return
     
-    if args.command == 'update':
+    current_version = get_current_discord_version(discord_path)
+    previous_version = get_previous_discord_version()
+    
+    if current_version != previous_version:
+        print_info(f"New version detected: {current_version}. Updating BetterDiscord...")
         update_betterdiscord(args.type)
+        update_previous_discord_version(current_version)
+    else:
+        print_success("No update required. BetterDiscord is up-to-date.")
 
 if __name__ == "__main__":
     main()
